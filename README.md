@@ -61,7 +61,8 @@ co2_PC CO2 emissions (metric tons per capita)
 pm2.5_35 PM2.5 pollution, population exposed to levels exceeding WHO Interim Target-1 value
 36ug/m3 (
 battleDeaths Battle-related deaths (number of people)
-1 Load and check data (5pt)
+
+Load and check data (5pt)
 You first task is to do a very simple data check:
 1. (1pt) For solving the problems, and answering the questions, create a new rmarkdown docu-
 ment with an appropriate title. See https://faculty.washington.edu/otoomet/info201-book/
