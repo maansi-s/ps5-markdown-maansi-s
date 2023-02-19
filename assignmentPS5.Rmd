@@ -18,6 +18,7 @@ output: html_document
   library(tidyverse)
   library(readr)
   library(ggplot2)
+  library(dplyr)
   file <- read_delim("gapminder.csv")
 ```
 
@@ -83,15 +84,20 @@ file %>%
 ```{r message=FALSE}
 missingCO2 <- file %>%
   group_by(time) %>%
-  filter(is.na(co2_PC), is.na(co2)) %>%
-  summarize(total = sum(which(is.na(co2_PC)) + which(is.na(co2)))) %>%
+  summarize(total = sum(is.na(co2))) %>%
   arrange(rank(desc(total)))
 
-print(missingCO2)
+missingCO2 %>%
+  top_n(10)
 ```
  
 ```{r message=FALSE}
-missingCO2 %>%
+missingCO2_PC <- file %>%
+  group_by(time) %>%
+  summarize(total = sum(is.na(co2_PC))) %>%
+  arrange(rank(desc(total)))
+
+missingCO2_PC %>%
   top_n(10)
 ```
 
@@ -192,13 +198,13 @@ print(" I went with 2016 since 2019 data is missing.")
 variables <- file %>%
   filter(time == 1960, !is.na(GDP_PC), !is.na(lifeExpectancy)) %>%
   group_by(GDP_PC, lifeExpectancy) %>% 
-  summarize(x = GDP_PC, y = lifeExpectancy, z = region, a = totalPopulation) 
+  summarize(x = GDP_PC, y = lifeExpectancy, z = region, a = totalPopulation/1000000) 
 
 ggplot(variables, aes(x = GDP_PC, y = lifeExpectancy)) +
    geom_point(aes(color = z, size = a, alpha = 0.5)) +
   labs(title = "GDP Per Capita vs. Life Expectancy by Country in 1960", 
          x = "GDP Per Capita", y = "Life Expectancy by Country") +
-         guides(color = guide_legend(title = "Continent"), size = guide_legend(title = "Population Size"), alpha = "none")
+         guides(color = guide_legend(title = "Continent"), size = guide_legend(title = "Population Size (in Millions)"), alpha = "none")
 ```
 
  2. (4pt) Make a similar plot, but this time use 2019 data only.
@@ -244,10 +250,9 @@ file %>%
 ```{r message=FALSE}
 file %>%
   group_by(region) %>%
-  filter(!is.na(lifeExpectancy), !is.na(region), region != "") %>%  
+  filter(!is.na(lifeExpectancy), !is.na(region)) %>%  
   summarize(avgLE = mean(lifeExpectancy)) %>%
-   mutate(prev = lag(avgLE),  
-          growth = avgLE - prev)
+  mutate(prev = lag(avgLE, default = 0, order_by = region), growth = avgLE - prev) 
 ``` 
  
  6. (6pt) Show the histogram of GDP per capita for years of 1960 and 2019. Try to put both
@@ -260,7 +265,7 @@ ggplot(hist, aes(x=GDP_PC, fill = as.factor(time)))+
   geom_histogram(position='dodge') +
   guides(fill = guide_legend(title = "Year")) +
   ggtitle("GDP Per Capita for 1960 & 2019") +
-  labs(x = "GDP Per Capita", y = "Year")
+  labs(x = "GDP Per Capita", y = "Frequency")
 ```
  
 
@@ -297,7 +302,6 @@ file %>%
 file %>%
   filter(time == 2019, !is.na(lifeExpectancy), name != "") %>%
   summarize(numCountries = n_distinct(name), rank = rank1/numCountries)
-```
 ```
 
  9. Finally tell us how many hours did you spend on this PS.
